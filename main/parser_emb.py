@@ -1,26 +1,58 @@
-from telethon import TelegramClient
-import asyncio
-import os
-from dotenv import load_dotenv
+# import os, asyncio
+# from dotenv import load_dotenv
+# from telethon import TelegramClient, events
+# from qdrant_client import QdrantClient
+# from qdrant_client.models import VectorParams, Distance, PointStruct
+# from sentence_transformers import SentenceTransformer
+# import httpx
 
-# Замените 'API_ID' и 'API_HASH' на ваши значения
+# load_dotenv()
 
-load_dotenv()
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
-SESSION_PATH = os.getenv("SESSION_PATH", "session")
-# Создаем клиента
-client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
-async def main():
-    # Подключение к серверу Telegram
-    await client.start()
-    channel_username = '@muqwal_m0rtem'
+# API_ID = int(os.getenv("API_ID"))
+# API_HASH = os.getenv("API_HASH")
+# SESSION_PATH = os.getenv("SESSION_PATH", "session")
 
-    async def get_messages(channel_username):
-        # Получение последних 100 сообщений из канала
-        async for message in client.iter_messages(channel_username, limit=100):
-            print(message.text)
+# QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+# COLLECTION = os.getenv("QDRANT_COLLECTION", "chat_messages")
 
-    asyncio.run(get_messages(channel_username))
-# Запуск основного цикла событий
-asyncio.run(main())
+# LLM_BASE_URL = os.getenv("LLM_BASE_URL")
+# LLM_API_KEY = os.getenv("LLM_API_KEY")
+# LLM_MODEL = os.getenv("LLM_MODEL")
+
+# client = TelegramClient(SESSION_PATH, API_ID, API_HASH)
+# qdrant = QdrantClient(url=QDRANT_URL)
+# embedder = SentenceTransformer("intfloat/e5-small")
+
+# try:
+#     qdrant.get_collection(COLLECTION)
+# except:
+#     qdrant.create_collection(
+#         collection_name=COLLECTION,
+#         vectors_config=VectorParams(size=384, distance=Distance.COSINE)
+#     )
+
+# async def embed_text(text: str):
+#     return embedder.encode(text).tolist()
+
+# @client.on(events.NewMessage)
+# async def handler(event):
+#     # Рекомендуем добавить условие для проверки чата. В данной реализации сохраняются все сообщения
+#     text = event.message.message
+#     if not text:
+#         return
+#     emb = await embed_text(text)
+#     point = PointStruct(
+#         id=event.message.id,
+#         vector=emb,
+#         payload={"text": text, "chat_id": event.chat_id}
+#     )
+#     qdrant.upsert(COLLECTION, points=[point])
+#     print(f"Сохранили сообщение: {text[:50]}...")
+
+# async def main():
+#     await client.start()
+#     print("Юзербот запущен")
+#     await client.run_until_disconnected()
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
