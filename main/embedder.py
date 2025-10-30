@@ -53,7 +53,7 @@ def html_to_embed(text):
 
 data['persona_1_profile'] = data['persona_1_profile'].apply(html_to_embed)
 data['persona_2_profile'] = data['persona_2_profile'].apply(html_to_embed)
-data['dialogue'] = data['dialogue'].apply(html_to_embed)
+data['embedded_dialogue'] = data['dialogue'].apply(html_to_embed)
 data['id'] = data.index
 print('Наша дата изменена...')
 
@@ -67,9 +67,10 @@ for i in data['id']:
                 vector={
                     'user_1': row["persona_1_profile"],
                     'user_2': row["persona_2_profile"],
-                    'dialog': row["dialogue"]
+                    'dialog': row["embedded_dialogue"]
                 },
                 payload={
+                    "txt": data['dialogue'].iloc[i],
                     "dataset": file_url,
-                    "data": date.today()})])
+                    "date": date.today()})])
     
