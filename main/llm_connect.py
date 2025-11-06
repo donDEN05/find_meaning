@@ -4,18 +4,23 @@ from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
 from bs4 import BeautifulSoup
+import torch
 
 load_dotenv()
 
-MODEL = os.getenv('HF_MODEL')
+HF_MODEL = os.getenv('HF_MODEL')
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "dialogs")
 
 qdrant = QdrantClient(url=QDRANT_URL)
 device = "cpu" # for GPU usage or "cpu" for CPU usage
-tokenizer = AutoTokenizer.from_pretrained(MODEL)
+
+if torch.cuda.is_available():
+    device = 'cuda'
+
+tokenizer = AutoTokenizer.from_pretrained(HF_MODEL)
 embedder = SentenceTransformer("intfloat/e5-small")
-model = AutoModelForCausalLM.from_pretrained(MODEL).to(device)
+model = AutoModelForCausalLM.from_pretrained(HF_MODEL).to(device)
 
 def souped(html_text):
     soup = BeautifulSoup(html_text, 'html.parser')
