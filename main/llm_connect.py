@@ -22,23 +22,29 @@ tokenizer = AutoTokenizer.from_pretrained(HF_MODEL)
 embedder = SentenceTransformer("intfloat/e5-small")
 model = AutoModelForCausalLM.from_pretrained(HF_MODEL).to(device)
 
+
 def souped(html_text):
     soup = BeautifulSoup(html_text, 'html.parser')
     souped = soup.get_text(strip=True)
     return souped
 
-def find_top_n_contexts(question, n):
+def find_top_n_contexts(question, n, target_vector='dialog'):
     vec = embedder.encode(question).tolist()
-    results = qdrant.search(collection_name=QDRANT_COLLECTION, using="dialog", query_vector=vec, limit=n)
-    context = "\n".join([souped(p.payload["txt"]) for p in results])
+    results = qdrant.query_points(
+        collection_name='embedded_data',
+        using=target_vector,
+        query=vec,
+        limit=n,
+    )
+    context = "\n".join([souped(p.payload["txt"]) for p in results.points])
     return context
     
 
 def llm_answer(question, n):
     context = find_top_n_contexts(question, n)
     messages = [
-            {"role": "system", "text": "Ты помогаешь находить важное в чате. Отвечай коротко, по делу. На русском языке"},
-            {"role": "user", "text": f"Вопрос: {question}\nКонтекст:\n{context}"}
+            {"role": "system", "content": "Ты помогаешь находить важное в чате. Отвечай коротко, по делу. На русском языке, если ты чего то не знаешь или если тебе не хватает информации - скажи что ты не знаешь ответа, нельзя пытаться угадать."},
+            {"role": "user", "content": f"Вопрос: {question}\nКонтекст:\n{context}"}
         ]
     input_text = tokenizer.apply_chat_template(messages, tokenize=False)
     inputs = tokenizer.encode(input_text, return_tensors="pt").to(device)
